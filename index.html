@@ -1,0 +1,206 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>GestureFlow | Advanced Desktop Control</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/js/all.min.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;700&display=swap" rel="stylesheet">
+    
+    <style>
+        :root {
+            --bg-dark: #0f172a;
+            --card-bg: #1e293b;
+            --accent: #38bdf8;
+            --accent-hover: #0ea5e9;
+            --text-main: #f8fafc;
+            --text-dim: #94a3b8;
+            --success: #22c55e;
+            --error: #ef4444;
+        }
+
+        body {
+            font-family: 'Plus Jakarta Sans', sans-serif;
+            background-color: var(--bg-dark);
+            color: var(--text-main);
+            margin: 0;
+            padding: 2rem;
+            display: flex;
+            justify-content: center;
+        }
+
+        .dashboard {
+            width: 100%;
+            max-width: 1100px;
+            animation: fadeIn 0.8s ease-out;
+        }
+
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+
+        header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 2.5rem;
+        }
+
+        .logo { font-size: 1.5rem; font-weight: 700; color: var(--accent); letter-spacing: -0.5px; }
+
+        /* System Status Banner (Requirement 3.1) */
+        .status-card {
+            background: linear-gradient(90deg, #1e293b 0%, #334155 100%);
+            padding: 1.25rem 2rem;
+            border-radius: 16px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 2rem;
+            border: 1px solid rgba(255,255,255,0.05);
+        }
+
+        .status-dot {
+            height: 10px; width: 10px; background: var(--success);
+            border-radius: 50%; display: inline-block; margin-right: 10px;
+            box-shadow: 0 0 10px var(--success);
+        }
+
+        /* Action Grid (Requirement 3.2) */
+        .grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 1.5rem; }
+
+        .glass-card {
+            background: var(--card-bg);
+            padding: 1.5rem;
+            border-radius: 20px;
+            border: 1px solid rgba(255,255,255,0.1);
+            transition: all 0.3s ease;
+        }
+
+        .glass-card:hover { border-color: var(--accent); transform: translateY(-4px); }
+
+        /* Controls (Requirement 3.3) */
+        .btn {
+            padding: 0.8rem 1.5rem;
+            border-radius: 12px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: 0.3s;
+            border: none;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            font-family: inherit;
+        }
+
+        .btn-primary { background: var(--accent); color: var(--bg-dark); }
+        .btn-primary:hover { background: var(--accent-hover); box-shadow: 0 0 20px rgba(56, 189, 248, 0.4); }
+
+        /* Mapping Table Visibility (Requirement 3.2) */
+        .table-container { margin-top: 2.5rem; background: var(--card-bg); border-radius: 20px; overflow: hidden; }
+        table { width: 100%; border-collapse: collapse; }
+        th { background: rgba(255,255,255,0.03); text-align: left; padding: 1.2rem; color: var(--text-dim); font-size: 0.85rem; text-transform: uppercase; }
+        td { padding: 1.2rem; border-top: 1px solid rgba(255,255,255,0.05); }
+
+        .badge { padding: 4px 12px; border-radius: 20px; font-size: 0.75rem; background: rgba(34, 197, 94, 0.1); color: var(--success); }
+    </style>
+</head>
+<body>
+    <div class="dashboard">
+        <header>
+            <div class="logo"><i class="fas fa-wave-square"></i> GESTUREFLOW</div>
+            <button class="btn btn-primary" onclick="retrain()"><i class="fas fa-bolt"></i> ONE-CLICK RETRAIN</button>
+        </header>
+
+        <div class="status-card">
+            <div>
+                <span id="status-dot" class="status-dot"></span> 
+                <span style="color: var(--text-dim)">System Engine:</span> 
+                <span id="engine-status" style="color: var(--success)">Operational</span>
+            </div>
+            <div>
+                <span style="color: var(--text-dim)">Current Gesture:</span>
+                <span id="live-feedback" style="font-weight: 600; color: var(--accent); margin-left: 10px;">Waiting for Input...</span>
+            </div>
+        </div>
+
+        <div class="grid">
+            <div class="glass-card">
+                <i class="fas fa-fingerprint" style="font-size: 2rem; color: var(--accent); margin-bottom: 1rem;"></i>
+                <h3>Capture New Gesture</h3>
+                <p style="color: var(--text-dim); font-size: 0.9rem;">Start the guided process to record 100 frames of a custom hand sign for the gesture library.</p>
+                <button class="btn" style="background: rgba(255,255,255,0.05); color: white; width: 100%; margin-top: 1rem;">Start Capture</button>
+            </div>
+            <div class="glass-card">
+                <i class="fas fa-sliders-h" style="font-size: 2rem; color: var(--accent); margin-bottom: 1rem;"></i>
+                <h3>Action Mapping</h3>
+                <p style="color: var(--text-dim); font-size: 0.9rem;">Link recognized hand patterns to productivity shortcuts like Switching Tabs or Media control.</p>
+                <button class="btn" style="background: rgba(255,255,255,0.05); color: white; width: 100%; margin-top: 1rem;">Edit Mappings</button>
+            </div>
+        </div>
+
+        <div class="table-container">
+            <table>
+                <thead>
+                    <tr><th>Gesture Name</th><th>Linked Action</th><th>Sensitivity</th><th>Status</th></tr>
+                </thead>
+                <tbody>
+                    <tr><td><b>Open Palm</b></td><td>Media Play/Pause</td><td>High</td><td><span class="badge">Active</span></td></tr>
+                    <tr><td><b>Victory Sign</b></td><td>Switch Application</td><td>Normal</td><td><span class="badge">Active</span></td></tr>
+                    <tr><td><b>Thumb Up</b></td><td>Volume Increase</td><td>High</td><td><span class="badge">Active</span></td></tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <script>
+        // One-Click Model Retraining (Requirement 3.3)
+        function retrain() {
+            const btn = document.querySelector('.btn-primary');
+            const originalText = btn.innerHTML;
+            btn.innerHTML = '<i class="fas fa-circle-notch fa-spin"></i> OPTIMIZING...';
+            btn.style.opacity = '0.7';
+
+            fetch('/retrain', { method: 'POST' })
+            .then(r => r.json())
+            .then(data => {
+                btn.innerHTML = originalText;
+                btn.style.opacity = '1';
+                alert(data.status); // User confirmation mechanism
+            })
+            .catch(err => {
+                btn.innerHTML = originalText;
+                btn.style.opacity = '1';
+                console.error("Retraining failed:", err);
+            });
+        }
+
+        // Stability: Real-time feedback polling (Requirement 3.1)
+        function updateDashboard() {
+            fetch('/get_status')
+            .then(response => response.json())
+            .then(data => {
+                const feedbackEl = document.getElementById('live-feedback');
+                const statusDot = document.getElementById('status-dot');
+                const engineStatus = document.getElementById('engine-status');
+
+                feedbackEl.innerText = data.last_gesture;
+
+                if(data.status.includes("Error")) {
+                    feedbackEl.style.color = "#ef4444";
+                    feedbackEl.innerText = data.status;
+                    statusDot.style.background = "#ef4444";
+                    engineStatus.innerText = "Error Detected";
+                    engineStatus.style.color = "#ef4444";
+                } else {
+                    feedbackEl.style.color = "#38bdf8";
+                    statusDot.style.background = "#22c55e";
+                    engineStatus.innerText = "Operational";
+                    engineStatus.style.color = "#22c55e";
+                }
+            });
+        }
+
+        // Poll every 500ms for Visual Clarity
+        setInterval(updateDashboard, 500);
+    </script>
+</body>
+</html>
