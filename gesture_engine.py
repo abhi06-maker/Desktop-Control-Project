@@ -17,14 +17,13 @@ def load_mapping():
         with open(MAPPING_PATH, "r") as f:
             return json.load(f)
     except Exception as e:
-        print("⚠️ Mapping load failed:", e)
+        print(" Mapping load failed:", e)
         return {}
 
 
 # ================= MAIN ENGINE =================
 def run_gesture_engine(shared_state, get_frame):
 
-    print("🔥 GESTURE ENGINE STARTED")
 
     # ---- Model Check ----
     if not os.path.exists(MODEL_PATH):
@@ -90,7 +89,7 @@ def run_gesture_engine(shared_state, get_frame):
                     shared_state["last_gesture"] = prediction
                     print("Prediction:", prediction)
 
-                    # 🔥 ALWAYS reload latest mapping (IMPORTANT)
+                    
                     mapping = load_mapping()
                     action = mapping.get(prediction)
 
@@ -104,7 +103,7 @@ def run_gesture_engine(shared_state, get_frame):
                         and action != last_triggered_action
                         and current_time - last_action_time > action_cooldown
                     ):
-                        print("🚀 TRIGGERING ACTION:", action)
+                        print(" TRIGGERING ACTION:", action)
 
                         if action == "alt_tab":
                             pyautogui.hotkey("alt", "tab")
@@ -122,7 +121,8 @@ def run_gesture_engine(shared_state, get_frame):
                     print("Prediction error:", e)
 
         else:
-            # reset so same gesture can fire again later
+            
             last_triggered_action = None
 
         time.sleep(0.01)
+
