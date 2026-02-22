@@ -282,3 +282,34 @@ button:hover {
   opacity: 1;
   transform: scale(1);
 }
+.glass-card img {
+    object-fit: cover;
+}
+/* ===== MODAL ===== */
+.modal {
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,0.55);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 999;
+}
+
+.modal-box {
+  background: #1e293b;
+  padding: 24px;
+  border-radius: 16px;
+  width: 320px;
+  border: 1px solid rgba(255,255,255,0.08);
+}
+
+.modal-input {
+  width: 100%;
+  padding: 8px;
+  margin-top: 6px;
+  border-radius: 8px;
+  border: none;
+  background: #0f172a;
+  color: white;
+}
