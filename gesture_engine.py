@@ -4,19 +4,35 @@ import pickle
 import pyautogui
 import os
 import time
+import json
+from collections import deque
+
+MODEL_PATH = "data/gesture_model.pkl"
+MAPPING_PATH = "data/mapping.json"
 
 
-def run_gesture_engine(shared_state):
+# ================= LOAD MAPPING =================
+def load_mapping():
+    try:
+        with open(MAPPING_PATH, "r") as f:
+            return json.load(f)
+    except Exception as e:
+        print("⚠️ Mapping load failed:", e)
+        return {}
 
-    model_path = "data/gesture_model.pkl"
+
+# ================= MAIN ENGINE =================
+def run_gesture_engine(shared_state, get_frame):
+
+    print("🔥 GESTURE ENGINE STARTED")
 
     # ---- Model Check ----
-    if not os.path.exists(model_path):
+    if not os.path.exists(MODEL_PATH):
         shared_state["status"] = "Error: Model file missing."
         return
 
     try:
-        with open(model_path, "rb") as f:
+        with open(MODEL_PATH, "rb") as f:
             model = pickle.load(f)
     except Exception as e:
         shared_state["status"] = f"Error loading model: {e}"
@@ -31,24 +47,23 @@ def run_gesture_engine(shared_state):
         min_tracking_confidence=0.7
     )
 
-    # ---- Camera Init (Windows stable) ----
-    cap = cv2.VideoCapture(0, cv2.CAP_DSHOW)
+    # ====== SMOOTHING ======
+    pred_buffer = deque(maxlen=5)
 
-    if not cap.isOpened():
-        shared_state["status"] = "Error: Camera not detected"
-        return
-
+    # ====== ACTION CONTROL ======
     last_action_time = 0
-    action_cooldown = 1.5
+    action_cooldown = 1.2
+    last_triggered_action = None
 
     shared_state["status"] = "System Operational"
 
+    # ================= MAIN LOOP =================
     while True:
-        success, img = cap.read()
+        img = get_frame()
 
-        if not success:
-            shared_state["status"] = "Error reading camera frame"
-            break
+        if img is None:
+            time.sleep(0.01)
+            continue
 
         img_rgb = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
         results = hands.process(img_rgb)
@@ -56,35 +71,58 @@ def run_gesture_engine(shared_state):
         if results.multi_hand_landmarks:
             for hand_lms in results.multi_hand_landmarks:
 
+                # ===== LANDMARKS =====
                 landmarks = []
                 for lm in hand_lms.landmark:
                     landmarks.extend([lm.x, lm.y])
 
                 try:
-                    prediction = model.predict([landmarks])[0]
+                    # ===== RAW PRED =====
+                    raw_pred = model.predict([landmarks])[0]
+                    pred_buffer.append(raw_pred)
 
-                    # 🔥 DASHBOARD UPDATE
+                    # ===== SMOOTHED PRED =====
+                    if len(pred_buffer) == pred_buffer.maxlen:
+                        prediction = max(set(pred_buffer), key=pred_buffer.count)
+                    else:
+                        prediction = raw_pred
+
                     shared_state["last_gesture"] = prediction
+                    print("Prediction:", prediction)
+
+                    # 🔥 ALWAYS reload latest mapping (IMPORTANT)
+                    mapping = load_mapping()
+                    action = mapping.get(prediction)
+
+                    print("Mapped Action:", action)
 
                     current_time = time.time()
 
-                    if current_time - last_action_time > action_cooldown:
+                    # ===== TRIGGER LOGIC =====
+                    if (
+                        action
+                        and action != last_triggered_action
+                        and current_time - last_action_time > action_cooldown
+                    ):
+                        print("🚀 TRIGGERING ACTION:", action)
 
-                        if prediction == "Switch_Tab":
+                        if action == "alt_tab":
                             pyautogui.hotkey("alt", "tab")
-                            last_action_time = current_time
 
-                        elif prediction == "Media_Play":
+                        elif action == "play_pause":
                             pyautogui.press("playpause")
-                            last_action_time = current_time
 
-                        elif prediction == "Volume_Up":
+                        elif action == "volume_up":
                             pyautogui.press("volumeup")
-                            last_action_time = current_time
+
+                        last_action_time = current_time
+                        last_triggered_action = action
 
                 except Exception as e:
                     print("Prediction error:", e)
 
-        time.sleep(0.01)
+        else:
+            # reset so same gesture can fire again later
+            last_triggered_action = None
 
-    cap.release()
+        time.sleep(0.01)
