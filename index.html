@@ -1,106 +1,187 @@
 <!DOCTYPE html>
 <html lang="en">
-
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-
     <title>GestureControl | Advanced Desktop Control</title>
 
+    <!-- Icons & Fonts -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/js/all.min.js"></script>
-    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;700&display=swap"
-        rel="stylesheet">
-    <link rel="stylesheet" href="index.css">
-    <link rel="shortcut icon" href="gfs.ico" type="image/x-icon">
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;700&display=swap" rel="stylesheet">
+
+    <!-- Flask Static CSS -->
+    <link rel="stylesheet" href="{{ url_for('static', filename='index.css') }}">
+    <link rel="shortcut icon" href="{{ url_for('static', filename='gfs.ico') }}" type="image/x-icon">
 </head>
 
 <body>
-    <div class="dashboard">
-        <header>
-            <div class="logo"><i class="fas fa-wave-square"></i> GESTURECONTROL</div>
-            <button class="btn btn-primary" onclick="retrain()"><i class="fas fa-bolt"></i> ONE-CLICK RETRAIN</button>
-        </header>
+<div class="dashboard">
 
-        <div class="status-card">
-            <div>
-                <span id="status-dot" class="status-dot"></span>
-                <span style="color: var(--text-dim)">System Engine:</span>
-                <span id="engine-status" style="color: var(--success)">Operational</span>
-            </div>
-            <div>
-                <span style="color: var(--text-dim)">Current Gesture:</span>
-                <span class="live-feedback">Waiting for
-                    Input...</span>
-            </div>
+    <!-- ================= HEADER ================= -->
+    <header>
+        <div class="logo">
+            <i class="fas fa-wave-square"></i> GESTURECONTROL
         </div>
 
-        <div class="grid">
-            <div class="glass-card">
-                <i class="fas fa-fingerprint" style="font-size: 2rem; color: var(--accent); margin-bottom: 1rem;"></i>
-                <h3>Capture New Gesture</h3>
-                <p style="color: var(--text-dim); font-size: 0.9rem;">Start the guided process to record frames of a
-                    custom hand sign for the gesture library.</p>
-                <button class="btn1"
-                    style="background: rgba(255,255,255,0.05); color: white; width: 100%; margin-top: 1rem;">Start
-                    Capture</button>
-            </div>
-            <div class="glass-card">
-                <i class="fas fa-sliders-h" style="font-size: 2rem; color: var(--accent); margin-bottom: 1rem;"></i>
-                <h3>Action Mapping</h3>
-                <p style="color: var(--text-dim); font-size: 0.9rem;">Link recognized hand patterns to productivity
-                    shortcuts like Switching Tabs or Media control.</p>
-                <button class="btn1"
-                    style="background: rgba(255,255,255,0.05); color: white; width: 100%; margin-top: 1rem;">Edit
-                    Mappings</button>
-            </div>
+        <button class="btn btn-primary" onclick="retrain()">
+            <i class="fas fa-bolt"></i> ONE-CLICK RETRAIN
+        </button>
+    </header>
+
+    <!-- ================= STATUS ================= -->
+    <div class="status-card">
+        <div>
+            <span id="status-dot" class="status-dot"></span>
+            <span style="color: var(--text-dim)">System Engine:</span>
+            <span id="engine-status" style="color: var(--success)">Operational</span>
         </div>
 
-        <div class="table-container">
-            <table>
-                <thead>
-                    <tr>
-                        <th>Gesture Name</th>
-                        <th>Linked Action</th>
-                        <th>Sensitivity</th>
-                        <th>Status</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    <tr>
-                        <td>
-                            <div class="gesture-hover">
-                                <span class="gesture-text">Open Palm</span>
-                                <img src="open palm.png" class="gesture-img" />
-                            </div>
-                        </td>
-                        <td>Media Play/Pause</td>
-                        <td>High</td>
-                        <td><span class="badge">Active</span></td>
-                    </tr>
-                    <tr>
-                        <td><div class="gesture-hover">
-                                <span class="gesture-text">Victory Sign</span>
-                                <img src="victory_sign-removebg-preview.png" class="gesture-img vs" />
-                            </div></td>
-                        <td>Switch Application</td>
-                        <td>Normal</td>
-                        <td><span class="badge">Active</span></td>
-                    </tr>
-                    <tr>
-                        <td><div class="gesture-hover">
-                                <span class="gesture-text">Thumb Up</span>
-                                <img src="thumb_up.png" class="gesture-img" />
-                            </div></td>
-                        <td>Volume Increase</td>
-                        <td>High</td>
-                        <td><span class="badge">Active</span></td>
-                    </tr>
-                </tbody>
-            </table>
+        <div>
+            <span style="color: var(--text-dim)">Current Gesture:</span>
+            <span id="live-gesture" style="font-weight:600; color:#38bdf8;">
+                Waiting...
+            </span>
         </div>
     </div>
 
-    <script src="index.js"></script>
-</body>
+    <!-- ================= ACTION CARDS ================= -->
+    <div class="grid">
 
+        <!-- Capture -->
+        <div class="glass-card">
+            <i class="fas fa-fingerprint"
+               style="font-size:2rem;color:var(--accent);margin-bottom:1rem;"></i>
+
+            <h3>Capture New Gesture</h3>
+
+            <p style="color:var(--text-dim);font-size:0.9rem;">
+                Start the guided process to record frames of a custom hand sign.
+            </p>
+
+            <button class="btn1"
+                    style="background: rgba(255,255,255,0.05); color:white; width:100%; margin-top:1rem;"
+                    onclick="startCapture()">
+                Start Capture
+            </button>
+        </div>
+
+        <!-- Mapping -->
+        <div class="glass-card">
+            <i class="fas fa-sliders-h"
+               style="font-size:2rem;color:var(--accent);margin-bottom:1rem;"></i>
+
+            <h3>Action Mapping</h3>
+
+            <p style="color:var(--text-dim);font-size:0.9rem;">
+                Link recognized hand patterns to productivity shortcuts.
+            </p>
+
+            <!-- ✅ PRO MODAL -->
+            <button class="btn1"
+                    style="background: rgba(255,255,255,0.05); color:white; width:100%; margin-top:1rem;"
+                    onclick="openModal('mapping')">
+                Edit Mappings
+            </button>
+        </div>
+
+    </div>
+
+    <!-- ================= LIVE CAMERA ================= -->
+    <div class="glass-card" style="margin-top: 22px;">
+        <h3 style="margin-bottom:10px;">
+            <i class="fas fa-video"></i> Live Hand Tracking
+        </h3>
+
+        <img
+            src="{{ url_for('video_feed') }}"
+            style="width:100%; border-radius:12px;"
+        >
+    </div>
+
+    <!-- ================= TABLE ================= -->
+    <div class="table-container">
+        <table>
+            <thead>
+                <tr>
+                    <th>Gesture Name</th>
+                    <th>Linked Action</th>
+                    <th>Sensitivity</th>
+                    <th>Status</th>
+                </tr>
+            </thead>
+
+            <tbody>
+                <tr>
+                    <td>
+                        <div class="gesture-hover">
+                            <span class="gesture-text">Open Palm</span>
+                            <img src="{{ url_for('static', filename='open palm.png') }}"
+                                 class="gesture-img" />
+                        </div>
+                    </td>
+                    <td>Media Play/Pause</td>
+                    <td>High</td>
+                    <td><span class="badge">Active</span></td>
+                </tr>
+
+                <tr>
+                    <td>
+                        <div class="gesture-hover">
+                            <span class="gesture-text">Victory Sign</span>
+                            <img src="{{ url_for('static', filename='victory_sign-removebg-preview.png') }}"
+                                 class="gesture-img vs" />
+                        </div>
+                    </td>
+                    <td>Switch Application</td>
+                    <td>Normal</td>
+                    <td><span class="badge">Active</span></td>
+                </tr>
+
+                <tr>
+                    <td>
+                        <div class="gesture-hover">
+                            <span class="gesture-text">Thumb Up</span>
+                            <img src="{{ url_for('static', filename='thumb_up.png') }}"
+                                 class="gesture-img" />
+                        </div>
+                    </td>
+                    <td>Volume Increase</td>
+                    <td>High</td>
+                    <td><span class="badge">Active</span></td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+
+</div>
+
+<!-- ================= MAPPING MODAL ================= -->
+<div id="mappingModal" class="modal" style="display:none;">
+  <div class="modal-box">
+    <h3>Edit Gesture Mapping</h3>
+
+    <label>Gesture</label>
+    <select id="gestureSelect" class="modal-input">
+      <option value="Open_Palm">Open_Palm</option>
+      <option value="Victory">Victory</option>
+      <option value="Thumb_Up">Thumb_Up</option>
+    </select>
+
+    <label style="margin-top:10px;">Action</label>
+    <select id="actionSelect" class="modal-input">
+      <option value="play_pause">Play / Pause</option>
+      <option value="alt_tab">Switch Tab</option>
+      <option value="volume_up">Volume Up</option>
+    </select>
+
+    <div style="margin-top:18px; display:flex; gap:10px;">
+      <button class="btn btn-primary" onclick="saveMapping()">Save</button>
+      <button class="btn" onclick="closeModal()">Cancel</button>
+    </div>
+  </div>
+</div>
+
+<!-- ================= JS ================= -->
+<script src="{{ url_for('static', filename='index.js') }}"></script>
+</body>
 </html>
